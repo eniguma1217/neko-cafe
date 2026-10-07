@@ -140,6 +140,13 @@ select{font-family:var(--font);font-size:13px;padding:3px;border:2px solid var(-
 .modal{position:fixed;inset:0;background:rgba(20,25,50,.55);display:grid;place-items:center;padding:16px;z-index:10}
 .modal .win{max-width:400px;width:100%;max-height:90vh;overflow:auto}
 .modal .bd{display:flex;flex-direction:column;gap:10px}
+.modal .win:has(.wk){max-width:600px}
+.modal .bd:has(.wk){gap:6px}
+.wk{display:grid;grid-template-columns:repeat(3,max-content minmax(0,1fr));gap:3px 10px;font-size:13px;align-items:baseline}
+.wk>span{color:var(--muted);font-size:11px;white-space:nowrap}
+.wk>b{font-weight:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hintbtn{font-family:var(--font);font-size:12px;text-align:left;padding:4px 8px;background:#fff3c4;border:2px solid #e3a21a;border-radius:6px;color:var(--ink);cursor:pointer}
+@media (max-width:520px){.wk{grid-template-columns:repeat(2,max-content minmax(0,1fr))}}
 table{width:100%;border-collapse:collapse}
 td{padding:4px 0;border-bottom:1px dashed var(--paper2)}
 td:last-child{text-align:right}
@@ -251,13 +258,20 @@ details.more table td{font-size:12px;padding:2px 0}
 .drawer .swapcat .n{overflow:hidden;text-overflow:ellipsis;min-width:1.5em;flex:0 1 auto}
 .drawer .swapcat small{flex:none;font-size:9px;letter-spacing:-.3px}
 .drawer .swaplb{grid-column:1/-1;font-size:11px}
+#navMini{display:none}
 /* 高さが足りない画面（スマホの横向きなど）：左の列は2列に並べて、スクロールしないで全部押せるように */
 @media (max-height:560px){
-  .side{display:grid;grid-template-columns:repeat(2,50px);grid-auto-rows:min-content;align-content:start;gap:2px;overflow:hidden}
-  .side .tab,.sidebtn{height:32px;min-width:0;width:50px}
-  .side .tab span,.sidebtn span{font-size:9px}
-  .side .tab i,.sidebtn i{font-size:13px}
+  .side{display:grid;grid-template-columns:repeat(2,60px);grid-template-rows:repeat(6,minmax(32px,1fr)) auto;gap:3px;overflow:hidden;height:100%}
+  .side .tab,.sidebtn{height:auto;min-height:0;min-width:0;width:60px}
+  .side .tab span,.sidebtn span{font-size:11px}
+  .side .tab i,.sidebtn i{font-size:18px}
   .matside{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:4px}
+  #navMini{display:flex;background:#7a86a8}
+  /* 細くしたとき：1列・絵だけ（素材は隠す） */
+  .side.mini{grid-template-columns:30px;grid-template-rows:none;grid-auto-rows:minmax(0,1fr)}
+  .side.mini .tab,.side.mini .sidebtn{width:30px;height:auto;min-height:0;padding:0;overflow:hidden}
+  .side.mini .tab i,.side.mini .sidebtn i{font-size:15px}
+  .side.mini .tab span,.side.mini .sidebtn span,.side.mini .matside{display:none}
 }
 #panel{gap:4px;padding:5px 6px}
 .drawer .grp{gap:2px}
@@ -308,6 +322,7 @@ details.more table td{font-size:12px;padding:2px 0}
     <button class="tab" data-tab="sys" title="機能"><i>⚙️</i><span>機能</span></button>
     <button class="sidebtn" id="viewBtn" title="おうちへ"><i>🏡</i><span>おうちへ</span></button>
     <button class="sidebtn" id="pause" title="一時停止"><i>⏸️</i><span>一時停止</span></button>
+    <button class="sidebtn" id="navMini" title="左の列を細くする"><i>◀</i><span>細くする</span></button>
     <div class="matside" id="matSide" title="素材（パトロールで集める）"></div>
   </nav>
   <div class="main">
@@ -372,8 +387,8 @@ const CONFIG = {
   startSeats: 2,           // 最初の席の数
   seatCost: 2000,          // 席を1つ増やす値段（最初）
   seatCostGrowth: 1.5,     // 席を増やすたびに値段が何倍になるか
-  expandCosts: [40000, 150000, 500000, 1000000], // お店を広げる値段（2〜5段階目）
-  expandMats: [                                  // お店を広げるのに必要な素材（2〜5段階目）
+  expandCosts: [40000, 150000, 500000, 1000000], // 増築の値段（2〜5段階目）
+  expandMats: [                                  // 増築に必要な素材（2〜5段階目）
     { wood: 8, cloth: 5 },
     { wood: 15, cloth: 10, bell: 5 },
     { wood: 25, cloth: 15, bell: 10, feather: 6 },
@@ -775,7 +790,7 @@ const AREAS = [
     boss: [[1, "tanuki"]], extra: [[4, { bell: [1, 2] }], [7, { charm: [1, 2] }]] },
 ];
 const MAX_AREA_LV = 10;
-const patrolCap = () => Math.min(MAX_AREA_LV, CONFIG.patrolLvCap[S.expand - 1]);   // お店を広げると、もっと上のレベルに挑戦できる
+const patrolCap = () => Math.min(MAX_AREA_LV, CONFIG.patrolLvCap[S.expand - 1]);   // 増築すると、もっと上のレベルに挑戦できる
 // 🏰 ラスボスの城（神社を CONFIG.finalUnlockLv にすると現れる。レベルは1つだけ）
 const FINAL_AREA = { id: "maou", name: "ネズミ大王の城", level: 6, final: true, hpBoost: 1.5, drops: { charm: [2, 3], bell: [2, 3] },
   pool: [[1, ["bigrat", "raccoon", "weasel", "tanuki"]]], boss: [[1, "kingrat"]] };
@@ -1446,7 +1461,7 @@ const has = id => S.items.includes(id) && !S.broken.includes(id);   // 壊れて
 // ショップの値段は、人気とお店の広さに合わせて上がる
 // ⭐ 人気の上限：お店の広さ・猫の種類・家具の種類・メニューの種類で決まる（そろえるほど上がる）
 const popParts = () => [
-  { name: "お店の広さ", v: 15 + 7 * (S.expand - 1), max: 43, hint: "お店を広げる" },
+  { name: "お店の広さ", v: 15 + 7 * (S.expand - 1), max: 43, hint: "増築する" },
   { name: "猫の種類", v: Math.min(21, Math.floor(S.cats.length * 1.5)), max: 21, hint: "猫を迎える（1匹+1.5）" },
   { name: "家具の種類", v: Math.min(20, S.items.length), max: 20, hint: "お店に家具を置く（1つ+1。倉庫の家具は入らない）" },
   { name: "メニューの種類", v: Math.min(16, Math.floor(Object.keys(S.menus).length * 0.4)), max: 16, hint: "メニューを開発する（1品+0.4）" },
@@ -1618,7 +1633,7 @@ function checkNewCats() {
   if (!fresh.length) return;
   fresh.forEach(d => { S.unlockedCats.push(d.id); addLog(`保護猫センターに${d.name}がやってきた！`); });
   queueModal("🐾 新しい猫がやってきた！", `
-    <div>保護猫センターに新しい猫が来ました。「ショップ」から迎えられます。</div>
+    <div>保護猫センターに新しい猫が来ました。「猫」から迎えられます。</div>
     <table>${fresh.map(d => `<tr><td>${rankBadge(d.id)}${d.name}</td><td>癒し${d.heal}・${yen(d.cost)}</td></tr>`).join("")}</table>`);
 }
 const seatCap = () => Math.min(SEATS.length, SEAT_CAP[S.expand - 1]);
@@ -2191,24 +2206,25 @@ function endDay() {
   homeTraining();
   S.cats.forEach(c => { c.energy = catMax(c); c.sleeping = false; c.target = null; });
   const t = S.today, diff = S.pop - (t.popStart ?? S.pop), hs = hints();
+  const net = t.sales - food - rent - (t.repair || 0), it = (k, v, cls = "") => `<span>${k}</span><b class="${cls}">${v}</b>`;
+  if (t.turnedAway >= 3) hs.unshift({ go: "shop:seat", text: `🪑 満席で${t.turnedAway}人帰った → 席を増やす` });
   queueModal(`🌙 ${month()}月 第${weekOfMonth()}週 おつかれさま`, `
-    <table>
-      <tr><td>来てくれたお客さん</td><td>${t.visitors}人</td></tr>
-      <tr><td>満席で帰ったお客さん</td><td>${t.turnedAway}人</td></tr>
-      <tr><td>売上</td><td class="plus">+${yen(t.sales)}</td></tr>
-      <tr><td>猫のごはん代</td><td class="minus">-${yen(food)}</td></tr>
-      <tr><td>家賃</td><td class="minus">${rentWait ? `0（大家さんが待ってくれた）` : `-${yen(rent)}`}</td></tr>
-      ${t.repair ? `<tr><td>荒らしの修理費</td><td class="minus">-${yen(t.repair)}</td></tr>` : ""}
-      <tr><td>今週の収支</td><td class="${t.sales - food - rent - (t.repair || 0) >= 0 ? "plus" : "minus"}">${t.sales - food - rent - (t.repair || 0) >= 0 ? "+" : "-"}${yen(Math.abs(t.sales - food - rent - (t.repair || 0)))}</td></tr>
-      <tr><td>人気</td><td class="${diff >= 0 ? "plus" : "minus"}">${diff >= 0 ? "+" : ""}${diff}</td></tr>
-      <tr><td>街の安全度</td><td>${townAvg()}%</td></tr>
-      ${t.raids ? `<tr><td>荒らし</td><td>${t.raids}回（追い払った ${t.repelled || 0}回）</td></tr>` : ""}
-      ${t.fled ? `<tr><td>こわがって帰ったお客さん</td><td class="minus">${t.fled}人</td></tr>` : ""}
-      ${t.brokeList ? `<tr><td>壊された家具</td><td class="minus">${t.brokeList.join("・")}</td></tr>` : ""}
-      ${t.stolen ? `<tr><td>盗まれた素材</td><td class="minus">${t.stolen.join("・")}</td></tr>` : ""}
-    </table>
-    ${t.turnedAway >= 3 ? `<div class="note">満席で帰ったお客さんが多いみたい。席を増やしてみよう。</div>` : ""}
-    ${hs.map(h => `<button class="pick" data-hint="${h.go}" style="background:#fff3c4;border-color:#e3a21a">💡 ${h.text} ▶</button>`).join("")}`);
+    <div class="wk">
+      ${it("収支", `${net >= 0 ? "+" : "-"}${yen(Math.abs(net))}`, net >= 0 ? "plus" : "minus")}
+      ${it("売上", "+" + yen(t.sales), "plus")}
+      ${it("来客", t.visitors + "人")}
+      ${it("ごはん代", "-" + yen(food), "minus")}
+      ${it("家賃", rentWait ? "0（待ってくれた）" : "-" + yen(rent), "minus")}
+      ${t.repair ? it("修理費", "-" + yen(t.repair), "minus") : ""}
+      ${it("人気", `${diff >= 0 ? "+" : ""}${diff}`, diff >= 0 ? "plus" : "minus")}
+      ${it("街の安全", townAvg() + "%")}
+      ${t.turnedAway ? it("満席で帰宅", t.turnedAway + "人", "minus") : ""}
+      ${t.raids ? it("荒らし", `${t.raids}回（撃退${t.repelled || 0}）`) : ""}
+      ${t.fled ? it("逃げた客", t.fled + "人", "minus") : ""}
+      ${t.brokeList ? it("壊れた家具", t.brokeList.join("・"), "minus") : ""}
+      ${t.stolen ? it("盗まれた", t.stolen.join("・"), "minus") : ""}
+    </div>
+    ${hs.map(h => `<button class="hintbtn" data-hint="${h.go}">💡 ${h.text} ▶</button>`).join("")}`);
 
   if (S.ad && --S.ad.days <= 0) { addLog(`${adData().name}の効果が終わった。`); S.ad = null; }
   // 街の安全度が下がる
@@ -2318,7 +2334,7 @@ function checkAchievements() {
     addLog(`🏆 実績「${a.name}」達成！ ${d.name}が保護猫センターにやってきた！`);
     queueModal("🏆 実績達成！", `<div class="bigemoji">🏆</div>
       <div style="text-align:center;font-size:18px">${a.name}</div><div style="text-align:center">${a.desc}</div>
-      <div>ごほうびに、${rankBadge(d.id)}<b>${d.name}</b>が保護猫センターにやってきました！「ショップ」の保護猫センターから<b>無料</b>で迎えられます。</div>
+      <div>ごほうびに、${rankBadge(d.id)}<b>${d.name}</b>が保護猫センターにやってきました！「猫」の保護猫センターから<b>無料</b>で迎えられます。</div>
       <div class="note">${d.desc}</div>
       ${ACHIEVEMENTS.some(x => x.after === a.id) ? `<div class="note">✨ 新しい実績が見えるようになった…！</div>` : ""}`);
   });
@@ -2511,8 +2527,9 @@ function act(kind, id) {
   if (kind === "catFocusOff") { catFocus = null; renderPanel(true); return; }
   if (kind === "catOpen") { catFocus = id; renderPanel(true); $("panel").scrollTop = 0; return; }
   if (kind === "goShop") {   // ショップの、その見出しを開く
-    if ($("drawer").hidden || tab !== "store") openDrawer("store");
-    subSel.store = id; renderPanel(true); $("panel").scrollTop = 0;
+    const tb = id === SHOP_SECS.cat ? "cats" : "store";   // 保護猫センターは猫の項目
+    if ($("drawer").hidden || tab !== tb) openDrawer(tb);
+    subSel[tb] = id; renderPanel(true); $("panel").scrollTop = 0;
     return;
   }
   if (kind === "shopBack") { subSel.store = null; applySub(); fitPanel(); $("panel").scrollTop = 0; return; }
@@ -2524,7 +2541,7 @@ function act(kind, id) {
     S.seats++; addLog("席を1つ増やした！");
   } else if (kind === "expand") {
     if (S.expand >= MAX_EXPAND || !pay(CONFIG.expandCosts[S.expand - 1], CONFIG.expandMats[S.expand - 1])) return;
-    S.expand++; addLog("お店を広げた！ 席を増やせるようになった。");
+    S.expand++; addLog("増築した！ 席を増やせるようになった。");
   } else if (kind === "storeItem") {   // 家具を倉庫にしまう（しまっているあいだは効果なし）
     if (!S.items.includes(id)) return;
     S.items = S.items.filter(x => x !== id); S.stored = [...(S.stored || []), id];
@@ -2532,12 +2549,12 @@ function act(kind, id) {
     addLog(`${itemData(id).name}を倉庫にしまった。`);
   } else if (kind === "unstore") {
     if (!(S.stored || []).includes(id)) return;
-    if (furnFull()) { addLog(`家具は今${furnCap()}個まで置けます。お店を広げると増えます。`); return; }
+    if (furnFull()) { addLog(`家具は今${furnCap()}個まで置けます。増築すると増えます。`); return; }
     S.stored = S.stored.filter(x => x !== id); S.items.push(id); addLog(`${itemData(id).name}を倉庫から出した！ 置きたい場所をタップしてね`);
     paintStyle = null; layoutMode = true; layoutSel = id; selected = null; closeDrawer(); if (view !== "shop") setView("shop");
   } else if (kind === "item") {
     const it = itemData(id);
-    if (furnFull()) { addLog(`家具は今${furnCap()}個まで置けます。お店を広げるか、倉庫にしまうと置けます。`); return; }
+    if (furnFull()) { addLog(`家具は今${furnCap()}個まで置けます。増築するか、倉庫にしまうと置けます。`); return; }
     if (S.items.includes(id) || (S.stored || []).includes(id) || !pay(priceOf(it.cost), it.mat)) return;
     S.items.push(id); addLog(`${it.name}を置いた！`);
     SETS.filter(st => st.items.includes(id) && st.items.every(has)).forEach(st => {
@@ -2552,7 +2569,7 @@ function act(kind, id) {
       queueModal("🏡 おうちがいっぱい", cost
         ? `<div>飼える猫は今${catLimit()}匹まで（お店${catCap()}匹＋おうち${homeCap()}匹）です。</div><div>おうちを広げると、おうちに置ける猫が<b>${homeCap()}匹 → ${HOME_CAP[homeLv()]}匹</b>になります。</div>
            ${B("homeUpAdopt", id, `おうちを広げて${d.name}を迎える`, cost + adoptCost(d), false, adoptMat(d))}<div class="note">（広げる${yen(cost)}＋迎える${yen(adoptCost(d))}）　やめるときは下のOK</div>`
-        : `<div>おうちはこれ以上広げられません。お店を広げると、お店に出られる猫が増えて、もっと飼えるようになります。</div>`);
+        : `<div>おうちはこれ以上広げられません。増築すると、お店に出られる猫が増えて、もっと飼えるようになります。</div>`);
       return;
     }
     if (!pay(adoptCost(d), adoptMat(d))) return;
@@ -2990,7 +3007,7 @@ function layoutClick(p) {
     || (t => t >= 0 ? "table:" + t : null)(tableAt(p));
   if (hit && hit !== layoutSel) { layoutSel = hit; return renderAll(); }
   if (!layoutSel) return;
-  if (!placeSel(layoutSel, p)) { addLog("そこはお店の外なので置けません。お店を広げると使えるようになります。"); return renderAll(); }
+  if (!placeSel(layoutSel, p)) { addLog("そこはお店の外なので置けません。増築すると使えるようになります。"); return renderAll(); }
   save(); renderAll();
 }
 const WINDOWS_BASE = [[22, 4], [70, 4], [118, 4], [166, 4], [206, 4], [236, 4]];
@@ -3804,21 +3821,21 @@ function hints() {
   const nowNo = (S.today.noCat || 0) >= 3 && (S.today.noCat || 0) / Math.max(1, S.today.visitors) >= 0.2 ? S.today.noCat : 0;   // 2割以上が猫に会えないときだけ
   const out = [], noCat = Math.max(nowNo, S.lastNoCat || 0), free = catCap() - dutyCats().length, home = S.cats.filter(c => !c.duty);
   if (noCat >= 2) {
-    const head = `😿 猫が足りません（猫に会えずに帰ったお客さん${noCat}人）：`;
-    if (free > 0 && home.length) out.push({ go: "cats", text: head + `おうちの猫を出勤させよう（あと${free}匹出せます）` });
-    else if (free > 0) out.push({ go: "shop:cat", text: head + `新しい猫を迎えよう（出勤枠があと${free}匹）` });
-    else out.push({ go: "shop:place", text: head + "出勤枠がいっぱい。お店を広げると、出勤できる猫が増えます" });
+    const head = `😿 猫不足（会えずに帰った${noCat}人）→ `;
+    if (free > 0 && home.length) out.push({ go: "cats", text: head + `おうちの猫を出勤（あと${free}匹）` });
+    else if (free > 0) out.push({ go: "shop:cat", text: head + `新しい猫を迎える` });
+    else out.push({ go: "shop:place", text: head + "増築する（出勤枠がいっぱい）" });
   }
   const stuck = S.known.filter(id => { const v = typeSat(id); return v >= CONFIG.fanSatNeed - 1 && v < CONFIG.fanSatNeed && !typeData(id).likes.some(m => S.menus[m] && S.menus[m].on); });
   if (stuck.length) {
     const t = typeData(stuck[0]), have = t.likes.filter(m => S.menus[m]);
-    out.push({ go: "menu", text: `🍰 ${t.name}さんの満足度が${CONFIG.fanSatNeed - 1}%で止まっています：${have.length ? `好物（${have.map(m => menuData(m).name).join("・")}）をお店に出すと上がります` : "好物のメニューをまだ持っていません。開発してみよう"}${stuck.length > 1 ? `（ほか${stuck.length - 1}種類も）` : ""}` });
+    out.push({ go: "menu", text: `🍰 ${t.name}の満足度が${CONFIG.fanSatNeed - 1}%止まり → ${have.length ? `好物（${have.map(m => menuData(m).name).join("・")}）を出す` : "好物を開発"}${stuck.length > 1 ? `（ほか${stuck.length - 1}種類）` : ""}` });
   }
   // 安全度が低くて、荒らしが来そうな地区（見回りで上げられる）
   const risky = S.areas.filter(id => (S.town[id] ?? 0) < CONFIG.raidSafety).sort((x, y) => S.town[x] - S.town[y]);
-  if (risky.length) out.push({ go: "town", text: `🛡️ ${risky.map(id => `${areaData(id).name}${S.town[id]}%`).join("・")}：安全度が${CONFIG.raidSafety}%を切っていて、荒らしが来るかも。見回りかパトロールへ` });
+  if (risky.length) out.push({ go: "town", text: `🛡️ ${risky.map(id => `${areaData(id).name}${S.town[id]}%`).join("・")} 荒らしが来るかも → 見回り` });
   // ブームのメニューを持っているのに、お店に出していない
-  if (S.boom && S.menus[S.boom] && !S.menus[S.boom].on) out.push({ go: "menu", text: `📈 いまは${menuData(S.boom).name}ブーム！ 持っているのにお店に出していません（出すと注文が増えて値段1.5倍）` });
+  if (S.boom && S.menus[S.boom] && !S.menus[S.boom].on) out.push({ go: "menu", text: `📈 ${menuData(S.boom).name}ブーム → お店に出す（値段1.5倍）` });
   return out;
 }
 // 案内を押したら、その画面を開く
@@ -3958,7 +3975,7 @@ const itemRow = it => {
     stored ? `<button class="btn" data-kind="unstore" data-id="${it.id}" ${furnFull() ? "disabled" : ""}>${furnFull() ? "置ける数がいっぱい" : "倉庫から出す"}</button>` : broken ? B("repair", it.id, "修理", repairCost(it.id)) : own ? `<span class="note">設置ずみ</span>` : furnFull() ? `<span class="note">置ける数がいっぱい</span>` : B("item", it.id, "置く", priceOf(it.cost), false, it.mat)}</div>`;
 };
 // 🛒 買えるものは全部「ショップ」に。見出しは「どこで使うか」
-const SHOP_SECS = { seat: "🪑 席を増やす", place: "🏠 お店を広げる", furn: "🛋️ 家具・椅子・床", chair: "🛋️ 家具・椅子・床", acc: "🎀 装備", gear: "🎀 装備", ing: "🧪 食材", home: "🏡 おうち", bell: "🔔 限界突破の鈴", cat: "🐈 保護猫センター", ad: "📣 宣伝" };
+const SHOP_SECS = { seat: "🪑 席を増やす", place: "🏠 増築", furn: "🛋️ 家具・椅子・床", chair: "🛋️ 家具・椅子・床", acc: "🎀 装備", gear: "🎀 装備", ing: "🧪 食材", home: "🏡 おうち", bell: "🔔 限界突破の鈴", cat: "🐈 保護猫センター", ad: "📣 宣伝" };
 // 椅子の入れかえ（買った椅子があるときだけ）
 const chairSwapHtml = () => `  <div class="grp"><h3>💺 椅子の入れかえ</h3>
     <div class="note">テーブルごとに、持っている椅子を選べます（お店でテーブルをタップしても変えられます）。</div>
@@ -4073,7 +4090,7 @@ function panelCats() {
   </div>
   <div class="grp"><h3>📖 猫図鑑（${S.met.length}/${CATS.length}）</h3>
     <div class="note">${[1, 2, 3, 4, 5].map(n => `${"★".repeat(n)} ${RANK_NAMES[n]} ${S.met.filter(id => rankOf(id) === n).length}/${CATS.filter(d => rankOf(d.id) === n).length}`).join("　")}</div>
-    <div class="note">条件を満たすと、ショップの保護猫センターに新しい猫がやって来ます。</div>
+    <div class="note">条件を満たすと、「猫」の保護猫センターに新しい猫がやって来ます。</div>
     ${locked.map(d => `<div class="row locked"><div class="nm">${rankBadge(d.id)}${S.met.includes(d.id) ? d.name : "？？？"}<small>${unlockText(d.unlock, d.id)}</small></div></div>`).join("") || `<div class="note">全員と出会えました！</div>`}
   </div>`;
 }
@@ -4158,10 +4175,10 @@ function panelStore() {
   return `
   <div class="mats" style="font-size:12px;gap:6px" title="素材は売っていないので、パトロールで集めよう">${Object.entries(MATERIALS).filter(([k]) => matSeen(k)).map(([k, n]) => `<span title="${n}" style="white-space:nowrap">${MAT_ICON[k] || ""}${S.mats[k] || 0}</span>`).join(" ")}</div>
   <div class="grp"><h3>${SHOP_SECS.place}</h3>
-    <div class="row"><div class="nm">${S.expand >= MAX_EXPAND ? "最大まで広げました" : "お店を広げる"}<small>置ける席：最大${cap}席・出勤できる猫：${catCap()}匹・置ける家具：${furnCap()}個${S.expand < MAX_EXPAND ? `（広げると猫${CAT_CAP[S.expand]}匹・家具${FURN_CAP[S.expand]}個）` : ""}</small><small>家賃 ${yen(rentOf())}/週${S.expand < MAX_EXPAND ? ` → 広げると${yen(rentOf(S.expand + 1))}/週` : ""}</small><small>（広さ${yen(CONFIG.rent[S.expand - 1] * CONFIG.weekScale)}＋家具${S.items.length + (S.home || []).length}個×${yen(CONFIG.rentPerItem * CONFIG.weekScale)}＋猫${S.cats.length}匹×${yen(CONFIG.rentPerCat * CONFIG.weekScale)}）</small></div>
-    ${S.expand >= MAX_EXPAND ? "" : B("expand", "", "広げる", CONFIG.expandCosts[S.expand - 1], false, CONFIG.expandMats[S.expand - 1])}</div></div>
+    <div class="row"><div class="nm">${S.expand >= MAX_EXPAND ? "最大まで増築しました" : "増築する"}<small>置ける席：最大${cap}席・出勤できる猫：${catCap()}匹・置ける家具：${furnCap()}個${S.expand < MAX_EXPAND ? `（増築すると猫${CAT_CAP[S.expand]}匹・家具${FURN_CAP[S.expand]}個）` : ""}</small><small>家賃 ${yen(rentOf())}/週${S.expand < MAX_EXPAND ? ` → 増築すると${yen(rentOf(S.expand + 1))}/週` : ""}</small><small>（広さ${yen(CONFIG.rent[S.expand - 1] * CONFIG.weekScale)}＋家具${S.items.length + (S.home || []).length}個×${yen(CONFIG.rentPerItem * CONFIG.weekScale)}＋猫${S.cats.length}匹×${yen(CONFIG.rentPerCat * CONFIG.weekScale)}）</small></div>
+    ${S.expand >= MAX_EXPAND ? "" : B("expand", "", "増築する", CONFIG.expandCosts[S.expand - 1], false, CONFIG.expandMats[S.expand - 1])}</div></div>
   <div class="grp"><h3>${SHOP_SECS.seat}（${S.seats + (S.counter || 0)}席）</h3>
-    <div class="row"><div class="nm">🪑 テーブル席 ${S.seats}/${cap}<small>${S.seats >= cap ? "お店を広げると増やせます" : "一度に入れるお客さんが増える"}</small></div>
+    <div class="row"><div class="nm">🪑 テーブル席 ${S.seats}/${cap}<small>${S.seats >= cap ? "増築すると増やせます" : "一度に入れるお客さんが増える"}</small></div>
     ${S.seats >= cap ? "" : B("seat", "", "増やす", seatPrice())}</div>
     <div class="row"><div class="nm">☕ 一人席（カウンター） ${S.counter || 0}/${counterCap()}<small>カウンターに座る一人用の席。テーブル席とは別に増やせます${S.expand < 5 ? "（5段階目まで広げるとさらに2席）" : ""}</small></div>
     ${(S.counter || 0) >= counterCap() ? "" : B("counter", "", "増やす", counterPrice())}</div></div>
@@ -4195,13 +4212,20 @@ function panelStore() {
   <div class="grp"><h3>${SHOP_SECS.bell}</h3>
     <div class="note">使うと、その猫のLvと戦闘Lvの上限が+${LIMIT_STEP}（1匹${LIMIT_MAX}回まで）。「猫」タブで使えます。いま${S.limitItems || 0}個持っています。</div>
     ${S.expand >= MAX_EXPAND ? `<div class="row"><div class="nm">🔔 限界突破の鈴<small>買うたびに値段が1.5倍になります（これまでに${S.bellBuy || 0}個買った）</small></div>${B("buyBell", "", "買う", bellPrice())}</div>`
-      : `<div class="row locked"><div class="nm">🔔 ？？？<small>お店を${MAX_EXPAND}段階目まで広げると並びます</small></div></div>`}
+      : `<div class="row locked"><div class="nm">🔔 ？？？<small>${MAX_EXPAND}段階目まで増築すると並びます</small></div></div>`}
   </div>
+`;
+}
+
+// 🐈 保護猫センター（猫の項目にある。買うときはショップと同じく、くわしいページから）
+function catCenterHtml() {
+  const full = S.cats.length >= catLimit();
+  const center = CATS.filter(d => catAvailable(d) && !S.cats.some(o => o.id === d.id)).sort((a, b) => rankOf(a.id) - rankOf(b.id));
+  return `
   <div class="grp"><h3>${SHOP_SECS.cat}（${S.cats.length}/${catLimit()}匹）</h3>
     <div class="note">飼える猫 ${S.cats.length}/${catLimit()}匹（お店${catCap()}＋おうち${homeCap()}）。${full ? "<b>いっぱいです</b>。迎えるときに、おうちを広げられます。" : ""}</div>
     ${center.length ? center.map(d => `<div class="row">${catPic(d.id, 32)}<div class="nm">${rankBadge(d.id)}${d.name}${seasonal(d) ? "（今月だけ）" : ""}<small>💗癒し${catHeal({ id: d.id, lv: 1, skills: [], acc: null })}・⚔️戦闘力${battlePower({ id: d.id, lv: 1, skills: [], acc: null, gear: null })}（Lv1のとき）</small><small>📈 上限Lv${potential(d.id).cap}：最大 💗${potential(d.id).heal}・⚔️${potential(d.id).pow}</small><small>${d.desc}</small>${rankOf(d.id) >= 3 ? `<small>★${rankOf(d.id)}の猫は、迎えるのに人気${adoptPop(d)}以上と素材が必要です</small>` : ""}<small>${uniqueSkill(d.id).battle ? "⚔️" : "🏠"}スキル：${uniqueSkill(d.id).d.name}（${uniqueSkill(d.id).d.desc}）</small><small>お気に入り：${typeData(d.fav).name}さん・まじめさ${"★".repeat(dilBase(d.id))}${"☆".repeat(5 - dilBase(d.id))}</small></div>${(S.pop < adoptPop(d) ? `<span class="note">人気${adoptPop(d)}で<br>迎えられる</span>` : B("cat", d.id, "迎える", adoptCost(d), false, adoptMat(d)))}</div>`).join("") : `<div class="note">いまは迎えられる猫がいません。</div>`}
-  </div>
-`;
+  </div>`;
 }
 
 function panelGuests() {
@@ -4317,7 +4341,7 @@ function townList(ready, done) {
     ${AREAS.map(a => {
       if (!S.areas.includes(a.id)) {
         const prev = AREAS[AREAS.indexOf(a) - 1];
-        return `<div class="row locked"><div class="nm">？？？<small>${S.areas.includes(prev.id) ? `${prev.name}をLv${CONFIG.areaUnlockLv}にする（いまLv${S.townLv[prev.id] || 1}）${areaExpandNeed(a) > 1 ? `＋お店を${areaExpandNeed(a)}段階目に広げる（いま${S.expand}段階目）` : ""}と解放` : "まだ手がかりがない"}</small></div></div>`;
+        return `<div class="row locked"><div class="nm">？？？<small>${S.areas.includes(prev.id) ? `${prev.name}をLv${CONFIG.areaUnlockLv}にする（いまLv${S.townLv[prev.id] || 1}）${areaExpandNeed(a) > 1 ? `＋${areaExpandNeed(a)}段階目まで増築する（いま${S.expand}段階目）` : ""}と解放` : "まだ手がかりがない"}</small></div></div>`;
       }
       return btn(a, `${a.name} <span style="font-size:12px;font-weight:normal">Lv${S.townLv[a.id] || 1}</span>`, areaStatus(a));
     }).join("")}
@@ -4355,7 +4379,7 @@ function townPage(a, ready, done) {
       ${line(`敵：${enemyNames(a, lv)}`)}
       ${line(`素材：${matIcons(a, lv)}`)}
       ${ts.length ? line(`住んでいるお客さん：${ts.map(t => S.known.includes(t.id) ? t.name : "？？？").join("・")}`) : ""}
-      ${line(maxLv < patrolCap() ? `Lv${maxLv}で勝つとLv${maxLv + 1}に挑戦できる` : maxLv < MAX_AREA_LV ? `🏠 お店を広げると、もっと上のレベルに挑戦できる（いまはLv${patrolCap()}まで）` : "最高レベルまで来ました！")}`;
+      ${line(maxLv < patrolCap() ? `Lv${maxLv}で勝つとLv${maxLv + 1}に挑戦できる` : maxLv < MAX_AREA_LV ? `🏠 増築すると、もっと上のレベルに挑戦できる（いまはLv${patrolCap()}まで）` : "最高レベルまで来ました！")}`;
   }
   return `<button class="btn off" data-kind="townBack" data-id="" style="align-self:flex-start">◀ 場所の一覧</button>
   <div class="grp showx"><h3>${a.final ? "🏰 " : a.season ? "🗓️ " : ""}${a.name}${a.final || a.season ? "" : ` Lv${maxLv} ${areaStatus(a)}`}</h3>
@@ -4380,7 +4404,7 @@ function panelHelp() {
       <li>レア度（★）が高い猫ほど、レベルの上限が高く、ご飯代も高くなります（★1の1倍〜★5の${CONFIG.foodRank[5]}倍）</li>
       <li><b>まじめさ</b>（★1〜5）が高い猫は、お客さんが待っていると遊びをやめて接客に行きます。低い猫はつい遊び続けることも。Lv10・Lv20で少しまじめになります</li>
       <li>猫はそれぞれ<b>固有スキル</b>を1つ持っています（🏠接客スキル か ⚔️戦闘スキル）。レア度が高い猫ほど強いスキル。保護猫センターで確認できます</li>
-      <li>限界突破の鈴を使うと、レベル上限が+${LIMIT_STEP}（1匹${LIMIT_MAX}回まで）。高いレベルのパトロールやボス討伐でごくまれに見つかり、グランプリ・年間ねこ大賞の1位でももらえます。お店を${MAX_EXPAND}段階目まで広げると、ショップでも買えます</li></ul>`),
+      <li>限界突破の鈴を使うと、レベル上限が+${LIMIT_STEP}（1匹${LIMIT_MAX}回まで）。高いレベルのパトロールやボス討伐でごくまれに見つかり、グランプリ・年間ねこ大賞の1位でももらえます。${MAX_EXPAND}段階目まで増築すると、ショップでも買えます</li></ul>`),
     P("💗 満足・人気", `<ul><li>お客さんは猫の癒し・メニュー・好物・椅子・好きな床などで満足します</li>
       <li>満足が高いと「最高！」で人気が上がり、ファンにもなってくれます</li>
       <li>満足ゲージが満タンになると、<b>追加注文</b>か<b>チップ</b>をくれます（1人1回）</li>
@@ -4402,7 +4426,7 @@ function panelHelp() {
       <li>💡 気づきにくいこと（猫が足りない・好物が出ていない など）は、画面の上に<b>案内</b>が出ます。押すとその画面が開きます</li>
       <li>テーブルをタップすると、椅子を入れかえられます。テーブルが丸ごと空いていると、2人組のお客さんも来ます。2人組は<b>猫1匹で2人とも接客</b>できます</li>
       <li>家賃 ＝ 広さの分 ＋ 家具1つ${yen(CONFIG.rentPerItem * CONFIG.weekScale)} ＋ 猫1匹${yen(CONFIG.rentPerCat * CONFIG.weekScale)}（毎週）</li>
-      <li>お店を広げると、席・出勤できる猫・<b>置ける家具の数</b>が増えます（家具は${FURN_CAP.join("→")}個）。いっぱいのときは「お店 → 倉庫」でしまうと入れかえられます。家具の効果は、お店に置いているあいだだけです</li>
+      <li>増築すると、席・出勤できる猫・<b>置ける家具の数</b>が増えます（家具は${FURN_CAP.join("→")}個）。いっぱいのときは「お店 → 倉庫」でしまうと入れかえられます。家具の効果は、お店に置いているあいだだけです</li>
       </ul>`),
     P("🛡️ パトロールと街", `<ul><li>猫を道のそばに置いて、おうちに来る敵を止めるタワーディフェンスです</li>
       <li>置きかた：下の猫を押して<b>持つ</b> → 地図の<b>台</b>をタップして置く。猫は台の上にしか置けません。置いた猫はタップで選んで、別の台に置き直し・入れかえできます</li>
@@ -4412,7 +4436,7 @@ function panelHelp() {
       <li>勝つとその地区の安全度が上がり（クリア済みのレベルでも上がる）、次のレベルに挑戦できます。前の地区をLv${CONFIG.areaUnlockLv}にすると次の地区が解放</li>
       <li>ボスにおうちまで来られると負けで、お店に被害が出ます</li>
       <li>🗓️ 公園が解放されると、季節のステージが現れます。その季節の3か月だけ遊べて、ここでしか手に入らないレア猫・レア装備があります</li>
-      <li>挑戦できるレベルは、お店の広さで決まります（1段階目はLv3まで → 5段階目でLv10まで）。住宅街・港・神社の解放には、お店を広げることも必要です</li>
+      <li>挑戦できるレベルは、お店の広さで決まります（1段階目はLv3まで → 5段階目でLv10まで）。住宅街・港・神社の解放には、増築することも必要です</li>
       <li>毎日の低下では、安全度は${CONFIG.safetyMin}%より下がりません。お金がマイナスの週は、家賃を待ってもらえます</li>
       <li>街の安全度は毎日少しずつ下がります。安全度60%で来店×1.15、35%で×0.8、0%だと×0.3</li></ul>`),
     P("😾 荒らし", `<ul><li>街の安全度が${CONFIG.raidSafety}%より低いと、お店に荒らしが来ることがあります</li>
@@ -4426,7 +4450,7 @@ function panelHelp() {
     P("🏆 目標・ランキング", `<ul><li>目標：人気${CONFIG.goalPopularity}・年間ねこ大賞1位・？？？（ひみつ）。全部そろうとエンディング</li>
       <li>📈 お客さんで上がる人気は<b>1週に${CONFIG.popWeekMax}まで</b>。上限に近いほど上がりにくくなります（賞金などのごほうびは別）</li>
       <li>⭐ 人気には<b>上限</b>があります（「情報」の人気で確認）。上限の上げ方：
-        <ul><li>お店を広げる（1段階ごとに+7）</li><li>猫を迎える（1匹+1.5、最大+21）</li><li>お店に家具を置く（1つ+1、最大+20。倉庫にしまった家具は入らない）</li><li>メニューを開発する（1品+0.4、最大+16）</li></ul></li>
+        <ul><li>増築する（1段階ごとに+7）</li><li>猫を迎える（1匹+1.5、最大+21）</li><li>お店に家具を置く（1つ+1、最大+20。倉庫にしまった家具は入らない）</li><li>メニューを開発する（1品+0.4、最大+16）</li></ul></li>
       <li>月末のグランプリは「売上（千円）＋人気」で順位を決めます</li>
       <li>街のねこランキングで月末に部門1位なら「ねこアワード」で${yen(CAT_AWARD.money)}・人気+${CAT_AWARD.pop}</li>
       <li>年間ねこ大賞は1年間で稼いだ癒し・討伐数で決まります。ライバルも毎年強くなります</li>
@@ -4436,11 +4460,11 @@ function panelHelp() {
     P("🌟 クリアのコツ", `<p>目標は「人気${CONFIG.goalPopularity}」「年間ねこ大賞1位」と、もう1つのひみつの目標。</p>
       <ul><li><b>序盤</b>：猫を2〜3匹にふやして、席は「猫の数×2」くらいまで。猫が足りないと「猫に会えなかった」で人気が下がります</li>
       <li>お客さんの<b>好物</b>のメニューを出すと満足が上がり、紹介で新しいお客さんが増えます（お客さん図鑑で好物を確認）</li>
-      <li>毎週パトロールで素材を集めて、<b>お店を広げる</b>のが一番の近道。広げると席・猫・人気の上限が全部ふえます</li>
+      <li>毎週パトロールで素材を集めて、<b>増築する</b>のが一番の近道。増築すると席・猫・人気の上限が全部ふえます</li>
       <li>安全度は見回りでかんたんに保てます。パトロールで戦うのは、レベルを上げたいときと素材がほしいときでOK</li>
       <li><b>中盤</b>：猫のレベルを上げ、家具セットをそろえ、床の張りかえで好きな雰囲気の席を作ると満足が大きく上がります</li>
       <li>ブームのメニューはお店に出しておくと売上アップ。上の「ブーム」を見てね</li>
-      <li><b>人気${CONFIG.goalPopularity}</b>：上限を上げるのがカギ。お店を5段階目まで広げて、猫・家具・メニューをそろえよう</li>
+      <li><b>人気${CONFIG.goalPopularity}</b>：上限を上げるのがカギ。5段階目まで増築して、猫・家具・メニューをそろえよう</li>
       <li><b>年間ねこ大賞</b>：癒し部門は「お店でたくさん接客した猫」、討伐部門は「パトロールでたくさん倒した猫」。強い猫を1匹に集中させるとねらいやすい</li>
       <li>困ったら、画面の上の💡案内を押してみよう</li></ul>`),
     P("💰 稼ぎ方のコツ", `<ul><li><b>序盤</b>：最初の1か月は家賃なし。持っている食材だけで作れるメニュー（レシピのヒントの「✨いま作れる！」）を開発して、お店に出そう。パトロールに勝つとお金ももらえます</li>
@@ -4448,7 +4472,7 @@ function panelHelp() {
       <li><b>ブーム</b>のメニューは値段1.5倍で注文も増えます。持っていれば必ず出しておこう</li>
       <li>お客さんの満足ゲージが満タンになると、<b>追加注文かチップ</b>がもらえます。好物・好きな椅子・好きな床の席・猫の癒しで満足を上げよう</li>
       <li><b>席を増やす</b>と一度に入れるお客さんが増えます。ただし猫が足りないと人気が下がるので、猫の数とつり合いを</li>
-      <li>お店を広げるほどお客さんがたくさん来ます（5段階目がいちばんもうかる）</li>
+      <li>増築するほどお客さんがたくさん来ます（5段階目がいちばんもうかる）</li>
       <li>スキル「おねだり上手」は追加注文、「チップ名人」はチップ1.5倍、「招き猫ポーズ」はお客さんを増やします。招き猫・王冠などの装備も来客アップ</li>
       <li>社長・評論家などのお金持ちのお客さんは、払いがいい。好物を出してファンを増やそう</li>
       <li>天気の良い日・イベントの月はお客さんが多め</li>
@@ -4462,7 +4486,7 @@ function panelHelp() {
 }
 const helpLink = page => `<button class="more-help" data-help="${page}">❓ ${page}の説明</button>`;
 
-const PANELS = { help: panelHelp, store: panelStore, town: panelTown, shop: panelShop, cats: panelCats, menu: () => menuSel && S.menus[menuSel] ? panelMenu() : panelMenu() + panelDev(), info: () => panelInfo() + panelGuests() };   // 開発はメニューに、お客さん図鑑は情報に
+const PANELS = { help: panelHelp, store: panelStore, town: panelTown, shop: panelShop, cats: () => panelCats() + catCenterHtml(), menu: () => menuSel && S.menus[menuSel] ? panelMenu() : panelMenu() + panelDev(), info: () => panelInfo() + panelGuests() };   // 開発はメニューに、お客さん図鑑は情報に
 function renderPanel(force) {
   if ($("drawer").hidden || !PANELS[tab] || swapDrag) return;   // 猫をドラッグ中は描きなおさない
   const html = PANELS[tab]();
@@ -4498,7 +4522,7 @@ function applySub() {
     const h = g.querySelector("h3");
     h.dataset.acc = keys[i]; h.setAttribute("role", "button"); h.tabIndex = 0; h.setAttribute("aria-expanded", open);
   });
-  if (tab === "store") $("panel").querySelectorAll(".row").forEach(row => {
+  if (tab === "store" || tab === "cats") $("panel").querySelectorAll(".row").forEach(row => {
     const b = [...row.querySelectorAll("button[data-kind]")].find(x => BUY_KINDS.includes(x.dataset.kind) || x.dataset.kind === "ing");
     if (!b || b.dataset.full) return;
     b.dataset.full = b.innerHTML; b.dataset.dis = b.disabled ? "1" : "";
@@ -4511,7 +4535,7 @@ function applySub() {
   const openKey = subSel[tab];
   let back = $("panel").querySelector(":scope > #pageBack");
   if (!back) { back = document.createElement("button"); back.id = "pageBack"; back.className = "btn off"; back.style.alignSelf = "flex-start"; back.textContent = "◀ 一覧にもどる"; $("panel").prepend(back); }
-  groups.forEach(g => { const rows = g.querySelectorAll(".row"); g.classList.toggle("showall", !g.classList.contains("listonly") && (!g.querySelector(".row button, .row select") || rows.length === 1) && !(tab === "store" && [...g.querySelectorAll("[data-kind]")].some(b => BUY_KINDS.includes(b.dataset.kind)))); });   // ショップで買う品物は、説明を「購入する」の先だけに出す
+  groups.forEach(g => { const rows = g.querySelectorAll(".row"); g.classList.toggle("showall", !g.classList.contains("listonly") && (!g.querySelector(".row button, .row select") || rows.length === 1) && !((tab === "store" || tab === "cats") && [...g.querySelectorAll("[data-kind]")].some(b => BUY_KINDS.includes(b.dataset.kind)))); });   // ショップで買う品物は、説明を「購入する」の先だけに出す
   [...$("panel").children].forEach(el => {
     const show = el === back ? !!openKey : el.classList.contains("mats") ? true : groups.includes(el) ? !openKey || el.querySelector("h3").dataset.acc === openKey : !openKey;
     el.style.display = show ? "" : "none";
@@ -4573,8 +4597,8 @@ $("drawerTitle").onclick = () => {
 };
 // 見出しの並び（よく使う順）
 const SEC_ORDER = {
-  cats: ["うちの猫", "入れ替え", "おうち", "猫図鑑"],
-  store: ["席を増やす", "家具", "保護猫センター", "食材", "お店を広げる", "おうち", "限界突破"],
+  cats: ["うちの猫", "入れ替え", "保護猫センター", "おうち", "猫図鑑"],
+  store: ["増築", "席を増やす", "家具", "保護猫センター", "食材", "おうち", "限界突破"],
   shop: ["壊れている", "倉庫", "椅子の入れかえ", "床の張りかえ", "模様替え", "家具セット"],
   menu: ["メニュー一覧", "開発", "しまってある", "レシピのヒント"],
   info: ["目標", "今月", "⭐ 人気", "グランプリ", "今年の挑戦", "実績", "コレクション", "お客さん図鑑", "年間ねこ大賞", "街のねこ", "うちの猫ランキング", "きろく"],
@@ -4597,7 +4621,7 @@ $("panel").addEventListener("click", e => {
   if (!nm || e.target.closest("button,select,input") || !nm.querySelector("small")) return;
   const row = nm.closest(".row");
   if (row.classList.contains("rowdetail")) return;
-  rowDetail = { tab, key: rowKey(row), html: row.outerHTML, buy: tab === "store" };
+  rowDetail = { tab, key: rowKey(row), html: row.outerHTML, buy: tab === "store" || tab === "cats" };
   showRowDetail(); fitPanel(); $("panel").scrollTop = 0;
 });
 function showRowDetail() {
@@ -4623,7 +4647,7 @@ function showRowDetail() {
 // 🛒 ショップの一覧では、買うボタンを押してもすぐには買わない：まずその品物のくわしいページを開いて、そこで買う
 const BUY_KINDS = ["seat", "counter", "expand", "item", "buyChair", "buyFloor", "buyHome", "homeUp", "buyBell", "cat"];   // 食材（ing）は、その場で買う
 $("panel").addEventListener("click", e => {
-  if (tab !== "store") return;
+  if (tab !== "store" && tab !== "cats") return;
   const b = e.target.closest("[data-kind]");
   if (!b || !BUY_KINDS.includes(b.dataset.kind)) return;
   const row = b.closest(".row");
@@ -5822,6 +5846,14 @@ window.addEventListener("orientationchange", () => setTimeout(fitStage, 200));
 if (window.ResizeObserver) new ResizeObserver(fitStage).observe($("stagebox"));
 fitStage();
 $("viewBtn").onclick = () => setView(view === "home" ? "shop" : "home");
+// 左の列を細くする（スマホの横向きなど、2列になるとき用）。この端末だけで覚えておく
+function setNavMini(on) {
+  $("side").classList.toggle("mini", on); $("navMini").innerHTML = on ? "<i>▶</i><span>広げる</span>" : "<i>◀</i><span>細くする</span>";
+  $("navMini").title = on ? "左の列を広げる" : "左の列を細くする";
+  try { localStorage.setItem("nekoNavMini", on ? "1" : ""); } catch (e) {}
+}
+$("navMini").onclick = () => setNavMini(!$("side").classList.contains("mini"));
+try { if (localStorage.getItem("nekoNavMini")) setNavMini(true); } catch (e) {}
 $("saveBtn").onclick = () => { saveArmed = null; save(); openSave(); };
 $("pause").onclick = () => { paused = !paused; renderHud(); };
 // 床を張る（タップ・なぞる）
