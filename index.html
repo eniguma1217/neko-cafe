@@ -37,12 +37,15 @@ body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin:0;
 .matside{flex:none;display:flex;flex-direction:column;gap:0;padding:2px 3px;background:var(--paper2);border:2px solid var(--navy);border-radius:6px;font-size:11px;line-height:1.25;color:var(--ink)}
 .matside span{white-space:nowrap;display:flex;justify-content:space-between;gap:3px;font-size:9px;letter-spacing:-.5px}
 .matside span i{font-style:normal}   /* 名前は切らない（左の列が中身に合わせて広がる） */
-.main{flex:1;min-width:0;display:flex;flex-direction:column;gap:0}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;position:relative}
 .stagebox{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #bgc{position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;z-index:0}
 .main>.chipsline{padding:4px 6px;background:var(--paper2);border-bottom:2px solid var(--navy)}
 .drawer{position:absolute;left:0;top:0;bottom:0;width:min(340px,46%);font-size:13px;display:flex;flex-direction:column;z-index:6;border-width:0 3px 0 0;border-radius:0;box-shadow:4px 0 0 rgba(37,53,97,.35)}
-.drawer>.tt{display:flex;justify-content:space-between;align-items:center}
+.drawer>.tt{display:flex;justify-content:space-between;align-items:center;flex:none}
+#drawerTitle.back{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+#pageBack{display:none!important}
+.drawer .grp.acc:not(.closed)>h3{display:none}   /* 開いているページの見出しは、上のタイトルに出す */
 .drawer .x{font-family:var(--font);background:none;border:0;color:#fff;font-size:18px;cursor:pointer;padding:0 4px}
 .subnav{display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;border-bottom:3px solid var(--navy);background:var(--paper2);flex:none}
 .sub{font-family:var(--font);font-size:12px;padding:4px 8px;border:2px solid var(--navy);border-radius:12px;background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
@@ -64,7 +67,7 @@ body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin:0;
 #telop.ng{background:#d6dbe2;color:#3a3f52}
 #telop b{display:block;font-size:30px;letter-spacing:2px;text-shadow:2px 2px 0 #fff}
 #telop span{display:block;font-size:15px;margin-top:4px}
-#sysPane{flex:1;min-height:0;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:14px}
+#sysPane{flex:1;min-height:0;overflow:auto;padding:6px 10px;display:flex;flex-direction:column;gap:6px}
 #logPane{flex:1;min-height:0;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:12px}
 #ticker{position:absolute;left:6px;right:6px;bottom:4px;font-size:12px;line-height:1.35;background:rgba(255,248,230,.88);border:2px solid var(--navy);border-radius:4px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 #ticker:empty{display:none}
@@ -82,7 +85,7 @@ body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin:0;
 .tag{font-size:12px;background:#fff;border:2px solid var(--navy);border-radius:12px;padding:1px 8px}
 .tag.ev{background:#ffe0ec}.tag.boom{background:#fff1b8}.tag.ad{background:#d9ecff}
 .stars{color:var(--gold);letter-spacing:1px}
-.stage{position:relative;line-height:0;overflow:hidden;flex:none;z-index:1}
+.stage{position:relative;line-height:0;overflow:hidden;flex:none;z-index:1;transition:transform .2s}
 canvas{-webkit-user-select:none;user-select:none;width:100%;height:auto;image-rendering:pixelated;display:block}
 .swapbox{display:flex;flex-wrap:wrap;gap:5px;min-height:52px;border:2px dashed #9aa3c5;border-radius:8px;padding:6px;background:#fff;align-items:flex-start}
 .swapbox.over{background:#fff3c4;border-color:#e3a21a}
@@ -232,6 +235,30 @@ details.more table td{font-size:12px;padding:2px 0}
 /* ===== 項目の画面：カイロソフト風にぎゅっと（1行・小さめのボタン・中身に合わせた幅） ===== */
 .drawer{width:max-content;min-width:200px;max-width:min(440px,66%);bottom:auto;max-height:100%}
 .drawer #panel{flex:0 1 auto}
+.pager{display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;flex:none;grid-column:1/-1}
+.pager .btn{padding:1px 14px}
+#panel.cols2,#panel.cols3{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));align-content:start}
+#panel.cols3{grid-template-columns:repeat(3,minmax(0,max-content))}
+#panel.cols2>.mats,#panel.cols3>.mats{grid-column:1/-1}
+.drawer .grp:not(.closed):has(>.swapbox){width:min(560px,calc(100vw - 130px))}
+.drawer:has(.grp:not(.closed)>.swapbox){max-width:calc(100% - 4px)}
+.drawer .swapbox{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:3px;padding:4px;min-height:40px}
+.drawer .row .catpic{width:22px!important;height:24px!important}
+.drawer td small.note,.drawer .line small.note{display:inline}
+.rankbox{display:flex;flex-direction:column;gap:1px;padding:3px 6px;background:#fff;border:1px solid var(--paper2);border-radius:4px;font-size:12px}
+.drawer .row .nm .s{font-size:11px;color:var(--muted)}
+.drawer .swapcat{padding:1px 4px;font-size:11px;line-height:1.4;white-space:nowrap;display:flex;gap:2px;min-width:0}
+.drawer .swapcat .n{overflow:hidden;text-overflow:ellipsis;min-width:1.5em;flex:0 1 auto}
+.drawer .swapcat small{flex:none;font-size:9px;letter-spacing:-.3px}
+.drawer .swaplb{grid-column:1/-1;font-size:11px}
+/* 高さが足りない画面（スマホの横向きなど）：左の列は2列に並べて、スクロールしないで全部押せるように */
+@media (max-height:560px){
+  .side{display:grid;grid-template-columns:repeat(2,50px);grid-auto-rows:min-content;align-content:start;gap:2px;overflow:hidden}
+  .side .tab,.sidebtn{height:32px;min-width:0;width:50px}
+  .side .tab span,.sidebtn span{font-size:9px}
+  .side .tab i,.sidebtn i{font-size:13px}
+  .matside{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:4px}
+}
 #panel{gap:4px;padding:5px 6px}
 .drawer .grp{gap:2px}
 .drawer .grp.acc>h3{padding:2px 8px;font-size:12px;line-height:1.5}
@@ -2488,7 +2515,7 @@ function act(kind, id) {
     subSel.store = id; renderPanel(true); $("panel").scrollTop = 0;
     return;
   }
-  if (kind === "shopBack") { subSel.store = null; applySub(); $("panel").scrollTop = 0; return; }
+  if (kind === "shopBack") { subSel.store = null; applySub(); fitPanel(); $("panel").scrollTop = 0; return; }
   if (kind === "counter") {
     if ((S.counter || 0) >= counterCap() || !pay(counterPrice())) return;
     S.counter = (S.counter || 0) + 1; addLog("一人席（カウンター席）を増やした！");
@@ -2641,7 +2668,7 @@ function act(kind, id) {
     if (!S.menus[id].on && onCount >= menuSlots()) { addLog(`お店に出せるメニューは${menuSlots()}品までです。どれかを下げよう。`); renderAll(); return; }
     S.menus[id].on = !S.menus[id].on;
   } else if (kind === "pickRecipe") {   // レシピのヒントから、その食材を開発にセット
-    devSel = menuData(id).recipe.filter(i => S.ingredients.includes(i)); subSel.menu = "🧪 メニュー開発"; $("panel").scrollTop = 0;
+    devSel = menuData(id).recipe.filter(i => S.ingredients.includes(i)); subSel.menu = "🧪 開発"; $("panel").scrollTop = 0;
   } else if (kind === "pickIng") {
     if (devSel.includes(id)) devSel = devSel.filter(x => x !== id);
     else if (devSel.length < 3) devSel.push(id);
@@ -3649,7 +3676,7 @@ const HOME_SHOW = 16;
 const homeShown = () => { const all = homeCats(); if (all.length <= HOME_SHOW) return all; const k = Math.floor(performance.now() / 20000) % all.length; return [...all.slice(k), ...all.slice(0, k)].slice(0, HOME_SHOW); };
 const CUSHIONS = () => Array.from({ length: 16 }, (_, i) => ({ x: 22 + (i % 8) * 26, y: 112 + Math.floor(i / 8) * 20 }));
 function setView(v) {
-  view = v; selected = null; renderInfo();
+  view = v; selected = null; renderInfo(); shiftStage();
   if (v === "home") { $("fx").dataset.home = "1"; $("fx").innerHTML = ""; } else delete $("fx").dataset.home;
   $("viewBtn").innerHTML = v === "home" ? "<i>☕</i><span>お店へ</span>" : "<i>🏡</i><span>おうちへ</span>";
   renderHud();
@@ -3765,7 +3792,8 @@ function renderHud() {
     ev.name ? `<span class="tag ev">🎊 ${ev.name}：${ev.desc}</span>` : "",
     ad ? `<span class="tag ad">📣 ${ad.name} 残り${S.ad.days}週</span>` : "",
   ].join("");
-  $("log").innerHTML = S.log.map(l => `<li>${l}</li>`).join("");
+  const lh = S.log.map(l => `<li>${l}</li>`).join("");
+  if ($("log")._h !== lh) { $("log")._h = lh; $("log").innerHTML = lh; if (!$("logPane").hidden) fitPage($("logPane"), "log"); }
   const tk = S.log[0] || "";
   if ($("ticker")._t !== tk) { $("ticker")._t = tk; $("ticker").innerHTML = tk ? "📜 " + tk : ""; }
 }
@@ -3964,7 +3992,7 @@ function panelShop() {
 
 // 🔄 入れ替え：猫をドラッグして、お店とおうちを行き来させる（名前・レベル・癒し・戦闘力だけ）
 function swapHtml() {
-  const card = c => `<div class="swapcat" data-swap="${c.id}">${nameOf(c.id)} <small>Lv${c.lv}</small><br><small>💗${catHeal(c)}・⚔️${battlePower(c)}</small></div>`;
+  const card = c => `<div class="swapcat" data-swap="${c.id}"><span class="n">${nameOf(c.id)}</span> <small>Lv${c.lv} 💗${catHeal(c)} ⚔️${battlePower(c)}</small></div>`;
   return `<div class="grp"><h3>🔄 入れ替え</h3>
     <div class="note">猫をドラッグして、お店とおうちの間で動かそう。相手の猫の上に落とすと交代します。</div>
     <div class="swapbox" data-zone="shop"><b class="swaplb">☕ お店（${dutyCats().length}/${catCap()}匹）</b>${dutyCats().map(card).join("")}</div>
@@ -4058,8 +4086,8 @@ function panelMenu() {
   const full = onMenus().length >= menuSlots();
   const on = known.filter(m => S.menus[m.id].on), off = known.filter(m => !S.menus[m.id].on);
   return `
-  <div class="grp"><h3>📋 お店に出しているメニュー（${on.length}品）</h3>
-    <div class="note">ここにあるメニューから注文されます。お客さんの好物を出すと満足+${CONFIG.likeBonus}！ お店を広げると出せる数が増えます。</div>
+  <div class="grp"><h3>📋 メニュー一覧（${on.length}品）</h3>
+    <div class="note">ここにあるメニューから注文されます。お客さんの好物を出すと満足+${CONFIG.likeBonus}！</div>
     ${on.map(m => menuLine(m)).join("")}
   </div>
   ${off.length ? `<div class="grp"><h3>📦 しまってあるメニュー（${off.length}品）</h3>${off.map(m => menuLine(m)).join("")}</div>` : ""}`;
@@ -4091,7 +4119,7 @@ function panelDev() {
   const rareIng = INGREDIENTS.filter(i => i.patrol);
   const tried = devSel.length >= 2 && S.tried.includes(recipeKey(...devSel));
   return `
-  <div class="grp"><h3>🧪 メニュー開発</h3>
+  <div class="grp"><h3>🧪 開発</h3>
     <div class="note">食材を2つか3つ選んで組み合わせよう。3つの組み合わせからは、豪華なメニューが生まれることも！<br>開発費はメニューが増えるほど高くなります（いま 2つ：${yen(Math.round(CONFIG.devCost * (1 + CONFIG.devCostGrowth * (Object.keys(S.menus).length - 1)) / 100) * 100)}・3つ：${yen(Math.round(CONFIG.devCost3 * (1 + CONFIG.devCostGrowth * (Object.keys(S.menus).length - 1)) / 100) * 100)}）。</div>
     <div class="chips">${owned.map(i => `<button class="chip ${devSel.includes(i.id) ? "sel" : ""}" data-kind="pickIng" data-id="${i.id}">${i.emoji} ${i.name}</button>`).join("")}</div>
     <div class="row"><div class="nm">${devSel.length ? devSel.map(id => ingData(id).name).join(" ＋ ") : "食材を選んでね"}${tried ? `<small>この組み合わせは試したことがある</small>` : ""}</div>
@@ -4137,7 +4165,7 @@ function panelStore() {
     ${S.seats >= cap ? "" : B("seat", "", "増やす", seatPrice())}</div>
     <div class="row"><div class="nm">☕ 一人席（カウンター） ${S.counter || 0}/${counterCap()}<small>カウンターに座る一人用の席。テーブル席とは別に増やせます${S.expand < 5 ? "（5段階目まで広げるとさらに2席）" : ""}</small></div>
     ${(S.counter || 0) >= counterCap() ? "" : B("counter", "", "増やす", counterPrice())}</div></div>
-  <div class="grp"><h3>${SHOP_SECS.furn}（置いている${S.items.length}/${furnCap()}）</h3>
+  <div class="grp"><h3>${SHOP_SECS.furn}（${S.items.length}/${furnCap()}）</h3>
     <div class="note">お店の床に置く家具。置くと猫が遊んだり、お客さんの満足度が上がります。セットでそろえるとボーナス！</div>
     ${SETS.map(st => `<div class="note" style="margin-top:6px"><b>${st.name}セット</b> ${st.items.every(has) ? "✨完成" : `（${st.items.filter(has).length}/${st.items.length}）`}・そろうと：${st.desc}</div>${st.items.map(id => itemRow(itemData(id))).join("")}`).join("")}
     <div class="note" style="margin-top:6px"><b>そのほかの家具</b></div>
@@ -4179,7 +4207,7 @@ function panelStore() {
 function panelGuests() {
   return `
   <div class="note">満足度が高い種類ほど、よく来てくれます。${helpLink("お客さんと紹介")}</div>
-  <div class="grp"><h3>🙋 お客さん図鑑（${S.known.length}/${GUEST_TYPES.length}）</h3>
+  <div class="grp listonly"><h3>🙋 お客さん図鑑（${S.known.length}/${GUEST_TYPES.length}）</h3>
     <div class="note">ファン${CONFIG.fanNeed}人＋満足度${CONFIG.fanSatNeed}%で紹介してくれます。満足度${CONFIG.fanSatNeed}%から先は<b>好物を出さないと上がりません</b>。${helpLink("お客さんと紹介")}</div>
     ${GUEST_TYPES.map(t => {
       if (!S.known.includes(t.id)) {
@@ -4189,13 +4217,16 @@ function panelGuests() {
       }
       const next = GUEST_TYPES.filter(x => x.from === t.id && !S.known.includes(x.id));
       const fans = S.fans[t.id] || 0;
-      return `<div class="row" style="flex-direction:column;align-items:stretch"><div class="nm"><b>${t.name}</b><small>${t.desc}</small>
-        <small>好きな雰囲気：${FLOORS[t.zone || "wood"].style}（${FLOORS[t.zone || "wood"].name}の床の席）</small>
-        <small>満足度 ${typeSat(t.id)}%（来店×${satFactor(t.id).toFixed(2)}）</small><div class="bar"><i style="width:${typeSat(t.id)}%;background:${typeSat(t.id) >= 60 ? "#3c9a5f" : typeSat(t.id) >= 40 ? "#e3a21a" : "#d14b3f"}"></i></div>${typeSat(t.id) >= CONFIG.fanSatNeed - 1 && typeSat(t.id) < CONFIG.fanSatNeed ? `<small style="color:#d05a00">${t.likes.some(id => S.menus[id]?.on) ? "🍰 好物を注文してもらえると、満足度がこの先も上がります" : "⚠️ 好物をお店に出さないと、満足度はここから上がりません"}</small>` : ""}
-        <small>住んでいる街：${areaData(t.home).name}${S.areas.includes(t.home) ? `（安全度${S.town[t.home]}%・来店×${typeFactor(t.id).toFixed(2)}）` : `（まだパトロールできない・来店×${typeFactor(t.id).toFixed(2)}）`}</small>
-        <small>好き：${t.likes.map(id => S.menus[id] ? menuData(id).name : "？？？").join("・")}</small>
-        ${t.special ? `<small>とくべつ：${t.special}</small>` : ""}</div>
-        ${next.length ? `<div class="note">ファン ${fans}/${CONFIG.fanNeed}・満足度 ${typeSat(t.id)}/${CONFIG.fanSatNeed}%（両方そろうと紹介）</div><div class="bar fan"><i style="width:${Math.min(100, fans / CONFIG.fanNeed * 100)}%"></i></div>` : `<div class="note">ファン ${fans}人</div>`}
+      const sat = typeSat(t.id), stuck = sat >= CONFIG.fanSatNeed - 1 && sat < CONFIG.fanSatNeed;
+      return `<div class="row"><div class="nm"><b>${t.name}</b> <span class="s">満足${sat}%・ファン${fans}${next.length ? `/${CONFIG.fanNeed}` : ""}${stuck ? " ⚠️" : ""}</span>
+        <small>${t.desc}</small>
+        <small>満足度 ${sat}%（来店×${satFactor(t.id).toFixed(2)}）<span class="bar" style="display:block"><i style="width:${sat}%;background:${sat >= 60 ? "#3c9a5f" : sat >= 40 ? "#e3a21a" : "#d14b3f"}"></i></span></small>
+        ${stuck ? `<small style="color:#d05a00">${t.likes.some(id => S.menus[id]?.on) ? "🍰 好物を注文されると、まだ上がる" : "⚠️ 好物を出さないと、ここから上がらない"}</small>` : ""}
+        <small>好きな席：${FLOORS[t.zone || "wood"].name}の床</small>
+        <small>住まい：${areaData(t.home).name}（来店×${typeFactor(t.id).toFixed(2)}）</small>
+        <small>好物：${t.likes.map(id => S.menus[id] ? menuData(id).name : "？？？").join("・")}</small>
+        ${t.special ? `<small>とくべつ：${t.special}</small>` : ""}
+        ${next.length ? `<small>紹介まで：ファン${fans}/${CONFIG.fanNeed}・満足${sat}/${CONFIG.fanSatNeed}%</small>` : ""}</div>
       </div>`;
     }).join("")}
   </div>
@@ -4239,7 +4270,7 @@ function panelInfo() {
   </div>
   <div class="grp"><h3>🏙️ 街のねこランキング</h3>
     <div class="note">月末に部門1位で ${yen(CAT_AWARD.money)}・人気+${CAT_AWARD.pop}！${helpLink("目標・ランキング")}</div>
-    ${townCatRanking().map(r => `<div class="row" style="flex-direction:column;align-items:stretch"><b>${r.title}</b>
+    ${townCatRanking().map(r => `<div class="rankbox"><b>${r.title}</b>
       ${r.list.slice(0, 10).map((x, i) => `<div class="line" style="justify-content:space-between;${x.me ? "color:var(--title);font-weight:700" : ""}"><span>${i < 3 ? ["🥇", "🥈", "🥉"][i] : `${i + 1}位`} ${x.me ? rankBadge(x.id) : ""}${x.name} <small class="note">${x.shop}</small></span><span>${x[r.key]}</span></div>`).join("")}
       ${r.list.slice(0, 10).some(x => x.me) ? "" : (() => { const i = r.list.findIndex(x => x.me); return i < 0 ? "" : `<div class="line" style="justify-content:space-between;color:var(--title)"><span>${i + 1}位 ${r.list[i].name} <small class="note">うちの店</small></span><span>${r.list[i][r.key]}</span></div>`; })()}
     </div>`).join("")}
@@ -4443,6 +4474,7 @@ function renderPanel(force) {
   paintPics($("panel"));
   applySub();
   if (rowDetail) showRowDetail();
+  fitPanel();
   if (!force) $("panel").scrollTop = top;
 }
 // 項目の中を小分けにするボタン（「■ ○○」の見出しごとに1つ）
@@ -4479,18 +4511,72 @@ function applySub() {
   const openKey = subSel[tab];
   let back = $("panel").querySelector(":scope > #pageBack");
   if (!back) { back = document.createElement("button"); back.id = "pageBack"; back.className = "btn off"; back.style.alignSelf = "flex-start"; back.textContent = "◀ 一覧にもどる"; $("panel").prepend(back); }
-  groups.forEach(g => { const rows = g.querySelectorAll(".row"); g.classList.toggle("showall", !g.querySelector(".row button, .row select") || rows.length === 1 && !(tab === "store" && [...g.querySelectorAll("[data-kind]")].some(b => BUY_KINDS.includes(b.dataset.kind)))); });   // ショップで買う品物は、説明を「購入する」の先だけに出す
+  groups.forEach(g => { const rows = g.querySelectorAll(".row"); g.classList.toggle("showall", !g.classList.contains("listonly") && (!g.querySelector(".row button, .row select") || rows.length === 1) && !(tab === "store" && [...g.querySelectorAll("[data-kind]")].some(b => BUY_KINDS.includes(b.dataset.kind)))); });   // ショップで買う品物は、説明を「購入する」の先だけに出す
   [...$("panel").children].forEach(el => {
     const show = el === back ? !!openKey : el.classList.contains("mats") ? true : groups.includes(el) ? !openKey || el.querySelector("h3").dataset.acc === openKey : !openKey;
     el.style.display = show ? "" : "none";
   });
 }
+// 📄 スクロールしないで収まるように：見出しの一覧は2列に、長いページは入る分ずつ「◀ 1/3 ▶」で切りかえる
+const pageOf = {};   // いま見ているページ（タブ:見出しごと）
+function fitPage(box, key, shrink = 0) {
+  box.querySelectorAll("[data-pg]").forEach(el => { el.style.display = ""; delete el.dataset.pg; });
+  box.querySelector(":scope > .pager")?.remove();
+  box.classList.remove("cols2", "cols3");
+  if (box.hidden || box.scrollHeight <= box.clientHeight + 1) return;
+  const shown = [...box.children].filter(el => el.style.display !== "none" && el.id !== "pageBack" && !el.classList.contains("mats"));
+  if (box.id === "panel" && !subSel[tab] && !rowDetail && shown.some(el => el.classList.contains("closed"))) {   // 見出しの一覧
+    box.classList.add("cols2");
+    if (box.scrollHeight > box.clientHeight + 1) { box.classList.remove("cols2"); box.classList.add("cols3"); }
+    return;
+  }
+  // ページに分ける単位：大きな入れ物（表・箇条書き・見出しのまとまり・大きな箱）は中身ごとに分ける
+  const big = box.clientHeight * 0.5, units = [], add = el => {
+    const atomic = el.matches(".row,.catcard,.swapbox,tr,li,button,canvas,select,.rowdetail") || (el.children.length < 2 && !el.matches("table,tbody,ul,ol")) || el.querySelector(":scope > .swapbox");
+    if (!atomic && (el.matches("ul,ol,table,tbody,thead,.grp") || el.offsetHeight > big))
+      [...el.children].forEach(c => { if (c.tagName !== "H3" && getComputedStyle(c).display !== "none") add(c); });
+    else units.push(el);
+  };
+  shown.forEach(add);
+  if (units.length < 2) return;
+  const bt = box.getBoundingClientRect().top - box.scrollTop;
+  const pos = units.map(u => { const r = u.getBoundingClientRect(); return [r.top - bt, r.bottom - bt]; });
+  const cap = box.clientHeight - pos[0][0] - (box.scrollHeight - pos[pos.length - 1][1]) - 30 - shrink;
+  const pages = [];
+  for (let i = 0; i < units.length;) {
+    let j = i + 1;
+    while (j < units.length && pos[j][1] - pos[i][0] <= cap) j++;
+    pages.push([i, j]); i = j;
+  }
+  if (pages.length < 2) return;
+  const p = Math.min(pages.length - 1, pageOf[key] || 0);
+  units.forEach((u, k) => { if (k < pages[p][0] || k >= pages[p][1]) { u.style.display = "none"; u.dataset.pg = "1"; } });
+  const pg = document.createElement("div"); pg.className = "pager";
+  pg.innerHTML = `<button class="btn off" data-pg-go="-1" ${p ? "" : "disabled"}>◀</button><span>${p + 1}/${pages.length}</span><button class="btn off" data-pg-go="1" ${p < pages.length - 1 ? "" : "disabled"}>▶</button>`;
+  pg.onclick = e => { const b = e.target.closest("[data-pg-go]"); if (!b || b.disabled) return; pageOf[key] = p + +b.dataset.pgGo; fitPage(box, key); };
+  box.append(pg);
+  const over = box.scrollHeight - box.clientHeight;   // まだはみ出すなら、1ページを少し短くしてやり直す
+  if (over > 1 && shrink < 200) fitPage(box, key, shrink + over + 2);
+}
+const fitPanel = () => { drawerTitle(); fitPage($("panel"), tab + ":" + (subSel[tab] || "") + (rowDetail ? ":d" : "")); };
+// 上のタイトル：ページを開いているときは「◀ 見出し」（押すと1つ前にもどる）。「一覧にもどる」のボタンの代わり
+function drawerTitle() {
+  const g = subSel[tab] && [...$("panel").querySelectorAll("h3[data-acc]")].find(h => h.dataset.acc === subSel[tab]);
+  const t = document.querySelector(`.tab[data-tab="${tab}"]`);
+  $("drawerTitle").textContent = rowDetail || g ? "◀ " + (g ? g.textContent : t.title) : tab === "help" && helpBack ? "説明" : t ? t.title : "";
+  $("drawerTitle").classList.toggle("back", !!(rowDetail || g));
+}
+$("drawerTitle").onclick = () => {
+  if (rowDetail) { rowDetail = null; renderPanel(true); }
+  else if (subSel[tab]) { subSel[tab] = null; applySub(); fitPanel(); }
+  $("panel").scrollTop = 0;
+};
 // 見出しの並び（よく使う順）
 const SEC_ORDER = {
   cats: ["うちの猫", "入れ替え", "おうち", "猫図鑑"],
   store: ["席を増やす", "家具", "保護猫センター", "食材", "お店を広げる", "おうち", "限界突破"],
   shop: ["壊れている", "倉庫", "椅子の入れかえ", "床の張りかえ", "模様替え", "家具セット"],
-  menu: ["お店に出している", "メニュー開発", "しまってある", "レシピのヒント"],
+  menu: ["メニュー一覧", "開発", "しまってある", "レシピのヒント"],
   info: ["目標", "今月", "⭐ 人気", "グランプリ", "今年の挑戦", "実績", "コレクション", "お客さん図鑑", "年間ねこ大賞", "街のねこ", "うちの猫ランキング", "きろく"],
 };
 const showX = new Set();   // 説明を開いている見出し（タブ:見出し）
@@ -4501,7 +4587,7 @@ $("panel").addEventListener("click", e => {
   const hl = e.target.closest("[data-help]");
   if (hl) { openHelpPage(hl.dataset.help); return; }
   if (e.target.closest("#helpBack")) { const t = helpBack; helpBack = null; openDrawer(t); }
-  if (e.target.closest("#pageBack")) { subSel[tab] = null; applySub(); $("panel").scrollTop = 0; }
+  if (e.target.closest("#pageBack")) { subSel[tab] = null; applySub(); fitPanel(); $("panel").scrollTop = 0; }
 });
 // 📄 行のくわしいページ：一覧の名前を押すと、その行の説明を全部出す（ボタンもそのまま使える）
 let rowDetail = null;   // { tab, key（行のボタンの kind:id）, html }
@@ -4512,7 +4598,7 @@ $("panel").addEventListener("click", e => {
   const row = nm.closest(".row");
   if (row.classList.contains("rowdetail")) return;
   rowDetail = { tab, key: rowKey(row), html: row.outerHTML, buy: tab === "store" };
-  showRowDetail(); $("panel").scrollTop = 0;
+  showRowDetail(); fitPanel(); $("panel").scrollTop = 0;
 });
 function showRowDetail() {
   if (!rowDetail || rowDetail.tab !== tab) { rowDetail = null; return; }
@@ -4531,10 +4617,8 @@ function showRowDetail() {
     }
   });
   [...$("panel").children].forEach(el => el.style.display = "none");
-  const back = document.createElement("button"); back.className = "btn off"; back.style.alignSelf = "flex-start"; back.textContent = "◀ もどる";
-  back.onclick = () => { rowDetail = null; renderPanel(true); $("panel").scrollTop = 0; };
   row.classList.add("rowdetail"); row.style.display = "";
-  $("panel").append(back, row);
+  $("panel").append(row);
 }
 // 🛒 ショップの一覧では、買うボタンを押してもすぐには買わない：まずその品物のくわしいページを開いて、そこで買う
 const BUY_KINDS = ["seat", "counter", "expand", "item", "buyChair", "buyFloor", "buyHome", "homeUp", "buyBell", "cat"];   // 食材（ing）は、その場で買う
@@ -4546,7 +4630,7 @@ $("panel").addEventListener("click", e => {
   if (!row || row.classList.contains("rowdetail")) return;   // くわしいページの中なら、そのまま買う
   e.stopImmediatePropagation(); e.preventDefault();
   rowDetail = { tab, key: rowKey(row), html: row.outerHTML, buy: true };
-  showRowDetail(); $("panel").scrollTop = 0;
+  showRowDetail(); fitPanel(); $("panel").scrollTop = 0;
 }, true);
 // 説明ページのその項目を開く（もどるボタンつき）
 function openHelpPage(page) {
@@ -4554,13 +4638,13 @@ function openHelpPage(page) {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x.dataset.tab === "help"));
   $("drawerTitle").textContent = "説明";
   const h = [...$("panel").querySelectorAll("h3[data-acc]")].find(x => x.textContent.includes(page.split("・")[0]));
-  if (h) { subSel.help = h.dataset.acc; applySub(); }
+  if (h) { subSel.help = h.dataset.acc; applySub(); fitPanel(); }
   $("panel").scrollTop = 0;
 }
 // 見出しを押すと開く・もう一度押すと閉じる
 function toggleAcc(h) {
   subSel[tab] = subSel[tab] === h.dataset.acc ? null : h.dataset.acc;
-  applySub();
+  applySub(); fitPanel();
   $("panel").scrollTop = 0;
 }
 $("panel").addEventListener("click", e => { const h = e.target.closest("h3[data-acc]"); if (h) toggleAcc(h); });
@@ -5657,23 +5741,39 @@ $("panel").addEventListener("change", e => {
     save(); renderAll();
   }
 });
+document.querySelector(".main").append($("drawer"));   // メニュー画面は、ゲーム画面の外（上の状態表示の行の上）まで使う
 // 左の項目：押すとゲームの上に中身が開く。同じ項目をもう一度押すと閉じる
 function openDrawer(name) {
   const dr = $("drawer"), same = !dr.hidden && tab === name;
   if (name !== "help") helpBack = null;
-  rowDetail = null; townSel = null; menuSel = null; quickOpen = null;   // 項目を開くたびに、いつも最初の画面から
+  rowDetail = null; townSel = null; menuSel = null; quickOpen = null; for (const k in pageOf) delete pageOf[k];   // 項目を開くたびに、いつも最初の画面から
   dr.hidden = same;
   if (!same) { tab = name; subSel[tab] = undefined; }
   catFocus = null;   // ふつうに項目を開いたときは、猫の一覧
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", !dr.hidden && x.dataset.tab === tab));
-  renderHud();
+  renderHud(); placeDrawer(); shiftStage();
   if (dr.hidden) return;
   const t = document.querySelector(`.tab[data-tab="${tab}"]`);
   $("drawerTitle").textContent = t ? t.title : "";
   $("panel").hidden = tab === "log" || tab === "sys"; $("logPane").hidden = tab !== "log"; $("sysPane").hidden = tab !== "sys"; if (tab === "log" || tab === "sys") $("subnav").hidden = true;
   renderPanel(true);
+  if (tab === "log") fitPage($("logPane"), "log");
 }
 function closeDrawer() { if (!$("drawer").hidden) openDrawer(tab); }
+// 左の項目を開いているあいだは、お店が隠れないように、ゲーム画面を右へずらす（外の景色が少し切れる）
+function placeDrawer() {   // 上のお金などの表示（HUD）のすぐ下から、画面の下まで
+  const dr = $("drawer"), main = document.querySelector(".main"), top = document.querySelector(".hud").offsetHeight;
+  dr.style.top = top + "px"; dr.style.maxHeight = (main.clientHeight - top) + "px";
+}
+function shiftStage() {
+  const dr = $("drawer"), st = $("stage");
+  if (dr.hidden || view !== "shop") { st.style.transform = ""; return; }
+  const box = $("stagebox").getBoundingClientRect(), sw = st.offsetWidth, k = sw / W;
+  const base = (box.width - sw) / 2, shopW = (shopRight() + 8) * k;
+  const need = dr.offsetWidth + 4 - base, room = box.width - base - shopW;
+  st.style.transform = `translateX(${Math.round(Math.max(0, Math.min(need, room)))}px)`;
+}
+if (window.ResizeObserver) new ResizeObserver(() => shiftStage()).observe($("drawer"));
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => openDrawer(t.dataset.tab));
 $("drawerClose").onclick = closeDrawer;
 $("modeBtn").onclick = () => { layoutMode = false; layoutSel = null; paintStyle = null; save(); renderAll(); };
@@ -5691,6 +5791,7 @@ function fitStage() {
   $("stage").style.width = sw + "px";
   $("stage").style.height = sh + "px";
   drawBackdrop(box.width, box.height, k, (box.width - sw) / 2, (box.height - sh) / 2);
+  placeDrawer(); shiftStage();
 }
 // ゲーム画面の外側に、床と壁の続きを描いて、すき間をなくす
 function drawBackdrop(bw, bh, k, ox, oy) {
